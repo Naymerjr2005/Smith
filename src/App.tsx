@@ -5,10 +5,31 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Newspaper, Briefcase, GraduationCap, X, Wallet, ExternalLink, Github, Disc, Menu, FileText, Youtube } from 'lucide-react';
+import { Newspaper, Briefcase, GraduationCap, X, Wallet, ExternalLink, Github, Disc, Menu, FileText, Youtube, Search, MapPin, Filter, RotateCcw } from 'lucide-react';
+
+const SAMPLE_JOBS = [
+  { id: 1, title: 'Senior Solidity Developer', company: 'Chainlink', location: 'Remote', category: 'Engineering', salary: '$140k - $200k' },
+  { id: 2, title: 'Web3 Content Creator', company: 'Verse', location: 'Global', category: 'Marketing', salary: 'Performance Based' },
+  { id: 3, title: 'Smart Contract Auditor', company: 'OpenZeppelin', location: 'Remote', category: 'Security', salary: '$160k - $250k' },
+  { id: 4, title: 'DeFi Product Designer', company: 'Uniswap', location: 'New York / Remote', category: 'Design', salary: '$120k - $180k' },
+  { id: 5, title: 'Community Manager', company: 'Polygon', location: 'Remote', category: 'Marketing', salary: '$80k - $120k' },
+  { id: 6, title: 'Full Stack Web3 Engineer', company: 'Aave', location: 'London / Remote', category: 'Engineering', salary: '$130k - $190k' },
+];
 
 export default function App() {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('All');
+
+  const filteredJobs = SAMPLE_JOBS.filter(job => {
+    const matchesSearch = job.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                         job.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         job.category.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = categoryFilter === 'All' || job.category === categoryFilter;
+    return matchesSearch && matchesCategory;
+  });
+
+  const categories = ['All', ...new Set(SAMPLE_JOBS.map(j => j.category))];
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -89,7 +110,10 @@ export default function App() {
           />
           
           <button 
-            onClick={() => setIsPopupOpen(true)}
+            onClick={() => {
+              const el = document.getElementById('jobs');
+              if (el) el.scrollIntoView({ behavior: 'smooth' });
+            }}
             className="group relative flex items-center gap-3 bg-linear-to-r from-brand to-brand-light text-white px-8 py-4 rounded-xl text-lg md:text-xl font-bold transition-all duration-300 hover:scale-105 hover:-translate-y-1 shadow-[0_0_25px_rgba(168,85,247,0.3)] hover:shadow-[0_0_35px_rgba(217,70,239,0.6)] cursor-pointer"
           >
             <Briefcase className="w-5 h-5" />
@@ -143,6 +167,126 @@ export default function App() {
           </motion.a>
         </motion.div>
       </motion.div>
+
+      {/* Jobs Explorer Section */}
+      <section id="jobs" className="relative w-full bg-[#0d0d0d] border-y border-white/5 py-24 md:py-32">
+        <div className="container mx-auto px-4 max-w-6xl z-10 relative text-center md:text-left">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12">
+            <div className="max-w-2xl mx-auto md:mx-0">
+              <div className="flex items-center gap-2 text-brand font-bold text-sm bg-brand/5 w-fit px-3 py-1 rounded-full border border-brand/10 mb-4 mx-auto md:mx-0">
+                <Search className="w-4 h-4" />
+                Live Job Board
+              </div>
+              <h2 className="text-3xl md:text-5xl font-display font-bold text-white mb-4">
+                Explore Web3 <span className="text-brand">Opportunities</span>
+              </h2>
+              <p className="text-gray-400 text-lg">
+                Find your next role in the decentralized world. Filter by specialty or search for specific projects.
+              </p>
+            </div>
+            
+            <div className="flex flex-col gap-4 w-full md:w-auto">
+              {/* Search Bar */}
+              <div className="relative group">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 group-focus-within:text-brand transition-colors" />
+                <input 
+                  type="text" 
+                  placeholder="Search titles, companies..." 
+                  className="w-full md:w-80 bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-hidden focus:border-brand/50 focus:ring-1 focus:ring-brand/20 transition-all font-medium"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+
+              {/* Category Pills */}
+              <div className="flex flex-wrap gap-2 justify-center md:justify-start">
+                {categories.map(cat => (
+                  <button
+                    key={cat}
+                    onClick={() => setCategoryFilter(cat)}
+                    className={`px-4 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                      categoryFilter === cat 
+                        ? 'bg-brand/20 border-brand text-brand shadow-[0_0_15px_rgba(168,85,247,0.2)]' 
+                        : 'bg-white/5 border-white/10 text-gray-500 hover:border-white/20 hover:text-gray-300'
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Jobs Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <AnimatePresence mode="popLayout">
+              {filteredJobs.length > 0 ? (
+                filteredJobs.map((job) => (
+                  <motion.div 
+                    key={job.id}
+                    layout
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    className="group bg-[#111111] border border-white/5 rounded-2xl p-6 hover:border-brand/30 transition-all hover:shadow-[0_8px_30px_rgb(0,0,0,0.4)] flex flex-col h-full text-left"
+                  >
+                    <div className="flex justify-between items-start mb-4">
+                      <div className="p-3 bg-brand/5 rounded-xl border border-brand/10 text-brand">
+                        <Briefcase className="w-5 h-5" />
+                      </div>
+                      <span className="text-[10px] uppercase tracking-wider font-bold text-gray-500 bg-white/5 px-2 py-1 rounded">
+                        {job.category}
+                      </span>
+                    </div>
+                    
+                    <h3 className="text-xl font-bold text-white mb-1 group-hover:text-brand transition-colors">
+                      {job.title}
+                    </h3>
+                    <p className="text-gray-400 font-medium mb-6">{job.company}</p>
+                    
+                    <div className="flex flex-col gap-3 mt-auto border-t border-white/5 pt-4">
+                      <div className="flex items-center gap-2 text-xs text-gray-500">
+                        <MapPin className="w-4 h-4 text-brand/50" />
+                        {job.location}
+                      </div>
+                      <div className="flex items-center gap-2 text-xs font-mono text-[#39ff14]/70">
+                        <Wallet className="w-4 h-4 text-[#39ff14]/50" />
+                        {job.salary}
+                      </div>
+                    </div>
+
+                    <button 
+                      onClick={() => setIsPopupOpen(true)}
+                      className="mt-6 w-full flex items-center justify-center gap-2 py-3 rounded-lg bg-linear-to-r from-brand to-brand-light text-sm font-bold text-white opacity-90 hover:opacity-100 transition-all shadow-lg active:scale-95"
+                    >
+                      Apply Now
+                      <ExternalLink className="w-4 h-4" />
+                    </button>
+                  </motion.div>
+                ))
+              ) : (
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="col-span-full py-20 text-center flex flex-col items-center"
+                >
+                  <div className="p-4 bg-white/5 rounded-full mb-6">
+                    <RotateCcw className="w-10 h-10 text-gray-600" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-2">No jobs matched your search</h3>
+                  <p className="text-gray-500 mb-8 max-w-sm">Try adjusting your filters or search keywords to find what you're looking for.</p>
+                  <button 
+                    onClick={() => { setSearchQuery(''); setCategoryFilter('All'); }}
+                    className="px-8 py-3 bg-brand/10 border border-brand/30 text-brand rounded-xl font-bold hover:bg-brand/20 transition-all active:scale-95"
+                  >
+                    Reset Filters
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
+      </section>
 
       {/* Popup Modal */}
       <AnimatePresence>
